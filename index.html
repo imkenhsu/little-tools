@@ -3,59 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>购买记录与每日成本</title>
+    <title>购买记录 · Vue 3 每日成本</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="container">
-      <h1>购买记录与每日成本</h1>
-      <p class="desc">记录购买日期和价格，自动计算“使用至今”的每日成本（按自然日）。</p>
-
-      <section class="card">
-        <h2>新增记录</h2>
-        <form id="purchase-form" class="form-grid">
-          <label>
-            物品名称
-            <input id="item" name="item" type="text" placeholder="例如：机械键盘" required />
-          </label>
-          <label>
-            购买日期
-            <input id="purchaseDate" name="purchaseDate" type="date" required />
-          </label>
-          <label>
-            价格（元）
-            <input id="price" name="price" type="number" min="0.01" step="0.01" placeholder="例如：699" required />
-          </label>
-          <button type="submit">保存记录</button>
-        </form>
-      </section>
-
-      <section class="card">
-        <div class="table-header">
-          <h2>记录列表</h2>
-          <button id="clear-all" class="danger" type="button">清空全部</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>物品</th>
-                <th>购买日期</th>
-                <th>价格</th>
-                <th>已使用天数</th>
-                <th>每日成本</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="records-body"></tbody>
-          </table>
-        </div>
-        <p id="empty" class="empty">暂无记录，请先添加。</p>
-        <p id="total" class="total">总支出：¥0.00</p>
-      </section>
-    </main>
-
-    <script src="app.js"></script>
+    <div id="app" class="page"></div>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
