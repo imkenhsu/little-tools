@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Little Tools</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <h1>🧰 Little Tools</h1>
+        <p>个人工具类网页集合</p>
+      </header>
+
+      <section class="toolbar">
+        <input id="search" type="search" placeholder="搜索工具（名称或标签）" />
+      </section>
+
+      <section>
+        <h2>工具列表</h2>
+        <div id="tools-grid" class="grid"></div>
+      </section>
+    </main>
+
+    <template id="tool-card-template">
+      <article class="card">
+        <h3 class="card-title"></h3>
+        <p class="card-desc"></p>
+        <p class="card-tags"></p>
+        <a class="card-link" href="#">打开</a>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
