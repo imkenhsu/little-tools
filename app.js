@@ -345,8 +345,8 @@ createApp({
           </div>
           <div class="head-actions">
             <span class="total">当前显示 {{ visibleCount }} / {{ totalCount }}</span>
-            <button class="btn ghost" type="button" @click="handleExport">导出 JSON</button>
-            <button class="btn danger" type="button" @click="clearAll">清空全部</button>
+            <button class="btn ghost toolbar-btn" type="button" @click="handleExport">导出 JSON</button>
+            <button class="btn danger toolbar-btn" type="button" @click="clearAll">清空全部</button>
           </div>
         </div>
 
@@ -455,7 +455,7 @@ createApp({
                         type="text"
                         placeholder="分类"
                       />
-                      <span v-else>{{ row.category }}</span>
+                      <span v-else class="tag">{{ row.category }}</span>
                     </td>
                     <td>
                       <input

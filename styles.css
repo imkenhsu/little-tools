@@ -204,6 +204,15 @@ textarea:focus {
   color: var(--text);
 }
 .btn.sm { padding: 7px 10px; font-size: 12px; }
+.toolbar-btn {
+  background: #ffffff;
+  color: var(--text);
+  border-color: var(--border);
+  font-weight: 500;
+}
+.toolbar-btn.btn.danger {
+  color: #b42318;
+}
 .submit-btn,
 .import-btn { width: 100%; }
 
@@ -310,7 +319,6 @@ th, td {
   text-align: left;
   padding: 12px;
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
   vertical-align: top;
   font-size: 14px;
 }
@@ -324,6 +332,18 @@ thead th {
 
 tbody tr:hover {
   background: var(--hover);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #f1efeb;
+  color: #5f5b53;
+  font-size: 12px;
+  line-height: 24px;
 }
 
 .row-actions {
