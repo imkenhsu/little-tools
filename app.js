@@ -1,4 +1,4 @@
-import { createApp, computed, reactive, ref } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
+import { createApp, computed, reactive, ref, watch } from "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js";
 import {
   computeDaysUsed,
   createRecordId,
@@ -39,6 +39,8 @@ createApp({
     const notice = ref("");
     const noticeType = ref("info");
     const importText = ref("");
+    const fileInput = ref(null);
+    const importExpanded = ref(false);
     const today = new Date();
     const maxDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
@@ -47,6 +49,11 @@ createApp({
       return formatCurrency(total);
     });
     const totalCount = computed(() => records.value.length);
+    const averageCost = computed(() => {
+      if (records.value.length === 0) return formatCurrency(0);
+      const total = records.value.reduce((sum, row) => sum + row.price, 0);
+      return formatCurrency(total / records.value.length);
+    });
     const categories = computed(() => {
       const values = new Set(records.value.map((row) => row.category));
       return ["all", ...Array.from(values).sort((left, right) => left.localeCompare(right, "zh-CN"))];
@@ -69,6 +76,9 @@ createApp({
         }));
     });
     const topCategory = computed(() => categoryStats.value[0]?.category || "未分类");
+    const recentRecord = computed(() => (
+      [...records.value].sort((left, right) => right.purchaseDate.localeCompare(left.purchaseDate))[0] || null
+    ));
     const filteredRecords = computed(() => {
       const query = filters.query.trim().toLowerCase();
       const category = filters.category;
@@ -113,6 +123,20 @@ createApp({
       notice.value = message;
       noticeType.value = type;
     }
+
+    function toggleImportExpanded() {
+      importExpanded.value = !importExpanded.value;
+    }
+
+    watch(notice, (message) => {
+      if (!message) return;
+      const timer = setTimeout(() => {
+        if (notice.value === message) {
+          notice.value = "";
+        }
+      }, 2400);
+      return () => clearTimeout(timer);
+    });
 
     function validateRecordInput(item, purchaseDate, price) {
       if (!item || !purchaseDate || !price || !isValidDateInput(purchaseDate)) {
@@ -251,19 +275,38 @@ createApp({
       showNotice(`已导入 ${imported.length} 条记录。`, "success");
     }
 
+    async function handleImportFile(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        importText.value = await file.text();
+        handleImport();
+      } catch {
+        showNotice("读取导入文件失败。", "error");
+      } finally {
+        event.target.value = "";
+      }
+    }
+
     return {
+      averageCost,
       categories,
       categoryStats,
       editForm,
       editingId,
+      fileInput,
       filters,
       form,
       handleExport,
       handleImport,
+      handleImportFile,
       importText,
+      importExpanded,
       notice,
       noticeType,
       maxDate,
+      recentRecord,
       records,
       filteredRecords,
       totalCount,
@@ -277,6 +320,7 @@ createApp({
       displayDaysUsed,
       saveEdit,
       startEdit,
+      toggleImportExpanded,
       formatCurrency,
       dailyCost
     };
@@ -287,20 +331,24 @@ createApp({
         <header class="hero">
           <p class="eyebrow">Purchase Ledger</p>
           <h1>购买记录 · 每日成本计算器</h1>
-          <p class="hero-copy">把零散消费整理成清晰账本，直接看到总支出、分类分布和单件物品每天的使用成本。</p>
+          <p class="hero-copy">把零散消费整理成清晰账本，快速查看支出、分类分布和每日使用成本。</p>
           <div class="hero-metrics">
             <article class="metric-card">
               <span class="metric-label">总支出</span>
               <strong class="metric-value">{{ totalCost }}</strong>
             </article>
             <article class="metric-card">
-              <span class="metric-label">记录数量</span>
-              <strong class="metric-value">{{ totalCount }}</strong>
+              <span class="metric-label">平均价格</span>
+              <strong class="metric-value">{{ averageCost }}</strong>
             </article>
             <article class="metric-card">
               <span class="metric-label">主分类</span>
               <strong class="metric-value">{{ topCategory }}</strong>
             </article>
+          </div>
+          <div class="hero-meta">
+            <span class="meta-pill">共 {{ totalCount }} 条记录</span>
+            <span v-if="recentRecord" class="meta-pill">最近购买：{{ recentRecord.item }} · {{ recentRecord.purchaseDate }}</span>
           </div>
         </header>
 
@@ -313,7 +361,7 @@ createApp({
             <span class="section-hint">支持分类、日期和价格校验</span>
           </div>
 
-          <p v-if="notice" class="notice" :class="'notice-' + noticeType">{{ notice }}</p>
+          <p v-if="notice" class="notice" :class="'notice-' + noticeType" aria-live="polite">{{ notice }}</p>
 
           <form class="form-grid" @submit.prevent="addRecord">
             <label>
@@ -408,13 +456,23 @@ createApp({
                   <p class="section-kicker">Import</p>
                   <h3>导入记录</h3>
                 </div>
+                <button class="btn ghost panel-toggle" type="button" @click="toggleImportExpanded">
+                  {{ importExpanded ? "收起" : "展开" }}
+                </button>
               </div>
-              <textarea
-                v-model="importText"
-                rows="7"
-                placeholder="粘贴之前导出的 JSON 数组"
-              ></textarea>
-              <button class="btn primary import-btn" type="button" @click="handleImport">导入并合并</button>
+              <p class="panel-copy">支持选择 JSON 文件，或粘贴之前导出的内容再合并。</p>
+              <div v-if="importExpanded" class="import-stack">
+                <label class="file-import">
+                  从文件导入
+                  <input ref="fileInput" type="file" accept="application/json,.json" @change="handleImportFile" />
+                </label>
+                <textarea
+                  v-model="importText"
+                  rows="5"
+                  placeholder="粘贴之前导出的 JSON 数组"
+                ></textarea>
+                <button class="btn primary import-btn" type="button" @click="handleImport">导入并合并</button>
+              </div>
             </section>
           </aside>
 
@@ -424,6 +482,7 @@ createApp({
 
             <div v-else class="table-wrap">
               <table>
+                <caption class="sr-only">购买记录表</caption>
                 <thead>
                   <tr>
                     <th>#</th>
